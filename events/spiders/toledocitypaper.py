@@ -3,6 +3,7 @@ import datetime
 import time
 import urllib
 import json
+from slugify import slugify
 from events.items import EventsItem
 
 
@@ -25,6 +26,7 @@ class ToledocitypaperSpider(scrapy.Spider):
         "sec-ch-ua-platform": '"Linux"',
     }
     end_date = None
+    item_count_in_response = {}
 
     def start_requests(self):
         start_date = datetime.datetime.now()
@@ -39,41 +41,64 @@ class ToledocitypaperSpider(scrapy.Spider):
         # Loop through all dates from current date to end date
         current_date = start_date
         while current_date <= end_date:
-            formatted_date = current_date.strftime("%Y-%m-%dT00:00")
+            formatted_current_date = current_date.strftime("%Y-%m-%dT00:00")
+            skip = 0
+            while True:
+                if (
+                    formatted_current_date in self.item_count_in_response
+                    and self.item_count_in_response[formatted_current_date] < 25
+                ):
+                    break
+                print("###############")
+                print(self.item_count_in_response.get(formatted_current_date))
+                print("###############")
+                end_at = (current_date + datetime.timedelta(days=1)).strftime(
+                    "%Y-%m-%dT00:00"
+                )
+                payload = {
+                    "ppid": 8308,
+                    "start": formatted_current_date,
+                    "end": end_at,
+                    "labels": [],
+                    "pick": False,
+                    "tps": None,
+                    "sparks": False,
+                    "sort": "Time",
+                    "category": [],
+                    "distance": 150,
+                    "lat": 41.65380859375,
+                    "lng": -83.536262512207,
+                    "search": "",
+                    "skip": skip,
+                    "defFilter": "all",
+                }
 
-            payload = {
-                "ppid": 8308,
-                "start": formatted_date,
-                "end": None,
-                "labels": [],
-                "pick": False,
-                "tps": None,
-                "sparks": False,
-                "sort": "Time",
-                "category": [],
-                "distance": 150,
-                "lat": 41.65380859375,
-                "lng": -83.536262512207,
-                "search": "",
-                "skip": 0,
-                "defFilter": "all",
-            }
-
-            yield scrapy.Request(
-                url=api_url,
-                callback=self.parse_api_response,
-                method="POST",
-                headers=self.headers,
-                body=json.dumps(payload),
-                #  meta = {'from': fromDate, 'to': toDate, 'count': count}
-            )
+                yield scrapy.Request(
+                    url=api_url,
+                    callback=self.parse_api_response,
+                    method="POST",
+                    headers=self.headers,
+                    body=json.dumps(payload),
+                    meta={"current_date": formatted_current_date, "skip": skip},
+                )
+                skip = skip + 25
 
             current_date += datetime.timedelta(days=1)
 
     def parse_api_response(self, response):
         res_json = json.loads(response.body)
-
+        if res_json["Value"] == None:
+            self.item_count_in_response[response.meta["current_date"]] = 0
+            return
+        else:
+            self.item_count_in_response[response.meta["current_date"]] = len(
+                res_json["Value"]
+            )
         for row in res_json["Value"]:
+            slug = slugify(row["Name"])
+            time_slug = row["DateStart"].split(":")[0]
+            source_url = f"https://toledocitypaper.com/calendar/details/{slug}/{row['PId']}/{time_slug}"
+
             event_item = EventsItem(
                 eventName=row["Name"],
                 categories=None,
@@ -93,6 +118,7 @@ class ToledocitypaperSpider(scrapy.Spider):
                 latitude=row["latitude"],
                 longitude=row["longitude"],
                 bannerImage=row["LargeImg"],
+                sourceURL=source_url,
             )
 
             yield event_item

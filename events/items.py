@@ -26,4 +26,5 @@ class EventsItem(scrapy.Item):
     latitude = scrapy.Field()
     longitude = scrapy.Field()
     bannerImage = scrapy.Field()
+    sourceURL = scrapy.Field()
     pass
