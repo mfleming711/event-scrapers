@@ -25,7 +25,6 @@ class EventsPipeline:
     def __init__(self):
         self.files = {}
         self.exporter = {}
-        self.source_url_list = []
 
     @classmethod
     def from_crawler(cls, crawler):
@@ -74,8 +73,5 @@ class EventsPipeline:
         file.close()
 
     def process_item(self, item, spider):
-        if item["sourceURL"] not in self.source_url_list:
-            self.source_url_list.append(item["sourceURL"])
-            self.exporter.export_item(item)
-
+        self.exporter.export_item(item)
         return item

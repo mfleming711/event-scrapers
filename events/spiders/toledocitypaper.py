@@ -27,6 +27,7 @@ class ToledocitypaperSpider(scrapy.Spider):
     }
     end_date = None
     item_count_in_response = {}
+    source_url_list = []
 
     def start_requests(self):
         start_date = datetime.datetime.now()
@@ -101,24 +102,26 @@ class ToledocitypaperSpider(scrapy.Spider):
 
             event_item = EventsItem(
                 eventName=row["Name"],
-                categories=None,
+                categories="",
                 locationName=row["Venue"],
                 addressLine1=row["Address"],
-                addressLine2=None,
+                addressLine2="",
                 city=row["CityState"].split(", ")[0],
                 state=row["CityState"].split(", ")[1],
                 zip=row["Zip"],
                 startDate=row["DateStart"],
                 endDate=row["DateEnd"],
                 description=row["Description"],
-                parkingInfo=None,
-                eventLink=row["Links"][0]["url"] if len(row["Links"]) > 0 else None,
-                minAge=None,
-                maxAge=None,
+                parkingInfo="",
+                eventLink=row["Links"][0]["url"] if len(row["Links"]) > 0 else "",
+                minAge="",
+                maxAge="",
                 latitude=row["latitude"],
                 longitude=row["longitude"],
                 bannerImage=row["LargeImg"],
                 sourceURL=source_url,
             )
 
-            yield event_item
+            if source_url not in self.source_url_list:
+                self.source_url_list.append(source_url)
+                yield event_item
