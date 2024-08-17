@@ -3,13 +3,11 @@ import datetime
 from events.items import EventsItem
 from bs4 import BeautifulSoup
 import requests
-
-api_key = "AIzaSyDLRvZpEhn81Z6hfpbFjfGWnbPHJ8orvDA"
-
+from events.settings import GEO_CODE_API_KEY
 
 def get_lat_lon(address):
     base_url = "https://maps.googleapis.com/maps/api/geocode/json"
-    params = {"address": address, "key": api_key}
+    params = {"address": address, "key": GEO_CODE_API_KEY}
     response = requests.get(base_url, params=params)
     if response.status_code == 200:
         results = response.json().get("results")

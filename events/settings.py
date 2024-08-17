@@ -1,3 +1,4 @@
+import os
 # Scrapy settings for events project
 #
 # For simplicity, this file contains only settings considered important or
@@ -97,3 +98,5 @@ FEED_EXPORT_ENCODING = "utf-8"
 FEED_EXPORTERS = {
     "csv": "events.exporters.QuoteAllCsvItemExporter",
 }
+
+GEO_CODE_API_KEY = os.getenv('GEO_CODE_API_KEY')
