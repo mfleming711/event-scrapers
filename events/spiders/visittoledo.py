@@ -174,7 +174,7 @@ class VisittoledoSpider(scrapy.Spider):
         for br in content.find_all("br"):
             br.replace_with("\n")
 
-        lat_lon = get_lat_lon(", ".join(address_list))
+        lat_lon = get_lat_lon(f"{location_name}, {address_line1}, {city}, {state} {zip}")
         if lat_lon:
             print(f"Latitude: {lat_lon[0]}, Longitude: {lat_lon[1]}")
 
