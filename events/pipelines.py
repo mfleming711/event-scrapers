@@ -37,9 +37,9 @@ class EventsPipeline:
         current_date = datetime.datetime.now()
         start_date = current_date.strftime("%Y-%m-%d")
         filename = (
-            f"toledocitypaper[{start_date}].csv"
+            f"{spider.name}[{start_date}].csv"
             if start_date == spider.end_date or spider.end_date is None
-            else f"toledocitypaper[{start_date} ~ {spider.end_date}].csv"
+            else f"{spider.name}[{start_date} ~ {spider.end_date}].csv"
         )
         file = open(filename, "w+b")
         self.files[spider] = file

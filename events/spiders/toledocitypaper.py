@@ -1,7 +1,5 @@
 import scrapy
 import datetime
-import time
-import urllib
 import json
 from slugify import slugify
 from events.items import EventsItem
@@ -35,6 +33,8 @@ class ToledocitypaperSpider(scrapy.Spider):
 
         end_date = (
             datetime.datetime.strptime(self.end_date, "%Y-%m-%d")
+            + datetime.timedelta(days=1)
+            - datetime.timedelta(seconds=1)
             if self.end_date
             else start_date
         )
