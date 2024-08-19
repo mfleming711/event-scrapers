@@ -6,11 +6,9 @@ import requests
 
 def get_lat_lon(address, API_KEY):
     base_url = "https://maps.googleapis.com/maps/api/geocode/json"
-    # print (API_KEY)
     params = {"address": address, "key": API_KEY}
     response = requests.get(base_url, params=params)
     if response.status_code == 200:
-        print (response.json())
         results = response.json().get("results")
         if results:
             location = results[0]["geometry"]["location"]
