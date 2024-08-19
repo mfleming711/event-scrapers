@@ -3,15 +3,9 @@ import datetime
 from events.items import EventsItem
 from bs4 import BeautifulSoup
 import requests
-# from scrapy.utils.project import get_project_settings
-from events.settings import GEO_CODE_API_KEY
 
-# settings = get_project_settings()
-# API_KEY = settings.get('GEO_CODE_API_KEY')
-
-def get_lat_lon(address):
+def get_lat_lon(address, API_KEY):
     base_url = "https://maps.googleapis.com/maps/api/geocode/json"
-    print (GEO_CODE_API_KEY)
     # print (API_KEY)
     params = {"address": address, "key": API_KEY}
     response = requests.get(base_url, params=params)
@@ -180,8 +174,10 @@ class VisittoledoSpider(scrapy.Spider):
         # Convert <br/> tags to newlines
         for br in content.find_all("br"):
             br.replace_with("\n")
+        
+        API_KEY = self.settings.get('GEO_CODE_API_KEY')
 
-        lat_lon = get_lat_lon(f"{location_name}, {address_line1}, {city}, {state} {zip}")
+        lat_lon = get_lat_lon(f"{location_name}, {address_line1}, {city}, {state} {zip}", API_KEY)
         if lat_lon:
             print(f"Latitude: {lat_lon[0]}, Longitude: {lat_lon[1]}")
 

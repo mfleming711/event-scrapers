@@ -99,4 +99,4 @@ FEED_EXPORTERS = {
     "csv": "events.exporters.QuoteAllCsvItemExporter",
 }
 
-# GEO_CODE_API_KEY = os.getenv('GEO_CODE_API_KEY')
+GEO_CODE_API_KEY = os.getenv('GEO_CODE_API_KEY')
