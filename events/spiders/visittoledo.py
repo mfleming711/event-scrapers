@@ -3,12 +3,17 @@ import datetime
 from events.items import EventsItem
 from bs4 import BeautifulSoup
 import requests
+# from scrapy.utils.project import get_project_settings
 from events.settings import GEO_CODE_API_KEY
+
+# settings = get_project_settings()
+# API_KEY = settings.get('GEO_CODE_API_KEY')
 
 def get_lat_lon(address):
     base_url = "https://maps.googleapis.com/maps/api/geocode/json"
     print (GEO_CODE_API_KEY)
-    params = {"address": address, "key": GEO_CODE_API_KEY}
+    # print (API_KEY)
+    params = {"address": address, "key": API_KEY}
     response = requests.get(base_url, params=params)
     if response.status_code == 200:
         print (response.json())
