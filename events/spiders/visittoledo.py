@@ -11,7 +11,7 @@ def get_lat_lon(address):
     params = {"address": address, "key": GEO_CODE_API_KEY}
     response = requests.get(base_url, params=params)
     if response.status_code == 200:
-        print (results)
+        print (response.json())
         results = response.json().get("results")
         if results:
             location = results[0]["geometry"]["location"]
