@@ -4,6 +4,7 @@ from events.items import EventsItem
 from bs4 import BeautifulSoup
 import requests
 
+
 def get_lat_lon(address, API_KEY):
     base_url = "https://maps.googleapis.com/maps/api/geocode/json"
     params = {"address": address, "key": API_KEY}
@@ -172,10 +173,12 @@ class VisittoledoSpider(scrapy.Spider):
         # Convert <br/> tags to newlines
         for br in content.find_all("br"):
             br.replace_with("\n")
-        
-        API_KEY = self.settings.get('GEO_CODE_API_KEY')
 
-        lat_lon = get_lat_lon(f"{location_name}, {address_line1}, {city}, {state} {zip}", API_KEY)
+        API_KEY = self.settings.get("GEO_CODE_API_KEY")
+
+        lat_lon = get_lat_lon(
+            f"{location_name}, {address_line1}, {city}, {state} {zip}", API_KEY
+        )
         if lat_lon:
             print(f"Latitude: {lat_lon[0]}, Longitude: {lat_lon[1]}")
 
