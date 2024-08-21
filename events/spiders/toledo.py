@@ -79,10 +79,18 @@ class ToledoSpider(scrapy.Spider):
 
             item_list = soup.find_all("article", class_="item")
 
-            if len(item_list) > 0:
+            print ("#"*20)
+            print (len(item_list))
+            print (res)
+            print ("before parsing")
+
+            if len(item_list) == 0:
                 break
 
             start_date = None if len(item_list) > 0 else end_date
+
+            print ("start_date", start_date)
+            print ("end_date", end_date)
             for item in item_list:
                 detail_slug = item.find("a", class_="title")["href"]
                 detail_url = f"https://www.toledo.com/{detail_slug}"
@@ -97,6 +105,10 @@ class ToledoSpider(scrapy.Spider):
                         headers=headers,
                         meta={"start_date": start_date},
                     )
+            
+            print ("#"*20)
+            print (len(item_list))
+            print (start_date)
 
             if start_date <= end_date:
                 index += 1
