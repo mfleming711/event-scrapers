@@ -74,7 +74,9 @@ class ToledoSpider(scrapy.Spider):
             if url is None:
                 break
 
-            res = requests.request("GET", url, headers=headers, data=payload)
+            SCRAPE_TOKEN = self.settings.get("SCRAPE_TOKEN")
+
+            res = requests.request("GET", f"http://api.scrape.do?token={SCRAPE_TOKEN}&url={url}", headers=headers, data=payload)
             soup = BeautifulSoup(res.text, "html.parser")
 
             item_list = soup.find_all("article", class_="item")
