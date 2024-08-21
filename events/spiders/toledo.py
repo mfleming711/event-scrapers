@@ -78,6 +78,10 @@ class ToledoSpider(scrapy.Spider):
             soup = BeautifulSoup(res.text, "html.parser")
 
             item_list = soup.find_all("article", class_="item")
+
+            if len(item_list) > 0:
+                break
+
             start_date = None if len(item_list) > 0 else end_date
             for item in item_list:
                 detail_slug = item.find("a", class_="title")["href"]
