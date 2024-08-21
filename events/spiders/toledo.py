@@ -95,7 +95,7 @@ class ToledoSpider(scrapy.Spider):
             print ("end_date", end_date)
             for item in item_list:
                 detail_slug = item.find("a", class_="title")["href"]
-                detail_url = f"https://www.toledo.com/{detail_slug}"
+                detail_url = f"http://api.scrape.do?token={SCRAPE_TOKEN}&url=https://www.toledo.com/{detail_slug}"
 
                 start_date = item.find("p", class_="date")["content"]
 
