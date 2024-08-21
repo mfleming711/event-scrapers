@@ -35,23 +35,19 @@ class ToledoSpider(scrapy.Spider):
 
         end_date = self.end_date if self.end_date else formatted_start_date
 
-        headers = {
-            "Referer": "",
-            "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36",
-        }
-
         yield scrapy.Request(
-            url="http://echo.jsontest.com/test/insert-here/key/value",
+            url="http://echo.jsontest.com/insert-key-here/insert-value-here/key/value",
             callback=self.parse_response,
             method="GET",
-            headers=headers,
+            headers={
+                "Referer": "",
+                "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36",
+            },
             meta={"start_date": formatted_start_date, "end_date": end_date},
         )
 
     def parse_response(self, response):
         end_date = response.meta["end_date"]
-
-        print (end_date)
 
         url = "https://www.toledo.com/events/"
         origin_url = "https://www.toledo.com/events/"
@@ -60,6 +56,18 @@ class ToledoSpider(scrapy.Spider):
         payload = {}
         headers = {
             "accept": "text/html, */*; q=0.01",
+            "accept-language": "en-US,en;q=0.9,fr;q=0.8",
+            "cookie": "PHPSESSID=9440d7c27cf808ff8c94f29498; _ga=GA1.2.1746171625.1723734965; _hjSessionUser_64303=eyJpZCI6ImYwZjI1Mjk5LTgxYmYtNWE3YS04YmM2LTkwYzRiNzc3ZTBmNCIsImNyZWF0ZWQiOjE3MjM3MzQ5NjYxNjIsImV4aXN0aW5nIjp0cnVlfQ==; _gid=GA1.2.69996161.1724168806; _hjSession_64303=eyJpZCI6ImZlNGU5ZGI3LTQ2YzgtNDJjYy1iMzVkLTc3MjkxN2UwZjNjNCIsImMiOjE3MjQxNjg4MDc2NjIsInMiOjAsInIiOjAsInNiIjowLCJzciI6MCwic2UiOjAsImZzIjowLCJzcCI6MH0=; _ga_56GJ538Y8Y=GS1.2.1724168808.5.1.1724168854.0.0.0",
+            "priority": "u=1, i",
+            "referer": "https://www.toledo.com/events",
+            "sec-ch-ua": '"Not/A)Brand";v="8", "Chromium";v="126", "Google Chrome";v="126"',
+            "sec-ch-ua-mobile": "?0",
+            "sec-ch-ua-platform": '"Linux"',
+            "sec-fetch-dest": "empty",
+            "sec-fetch-mode": "cors",
+            "sec-fetch-site": "same-origin",
+            "user-agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36",
+            "x-requested-with": "XMLHttpRequest",
         }
 
         while True:
