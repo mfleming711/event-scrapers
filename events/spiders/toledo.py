@@ -35,16 +35,23 @@ class ToledoSpider(scrapy.Spider):
 
         end_date = self.end_date if self.end_date else formatted_start_date
 
+        headers = {
+            "Referer": "",
+            "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36",
+        }
+
         yield scrapy.Request(
-            url="http://echo.jsontest.com/insert-key-here/insert-value-here/key/value",
+            url="http://echo.jsontest.com/test/insert-here/key/value",
             callback=self.parse_response,
             method="GET",
-            headers={},
+            headers=headers,
             meta={"start_date": formatted_start_date, "end_date": end_date},
         )
 
     def parse_response(self, response):
         end_date = response.meta["end_date"]
+
+        print (end_date)
 
         url = "https://www.toledo.com/events/"
         origin_url = "https://www.toledo.com/events/"
