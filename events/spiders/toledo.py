@@ -76,99 +76,108 @@ class ToledoSpider(scrapy.Spider):
 
             SCRAPE_TOKEN = self.settings.get("SCRAPE_TOKEN")
 
-            res = requests.request("GET", f"http://api.scrape.do?token={SCRAPE_TOKEN}&url={url}", headers=headers, data=payload)
+            res = requests.request(
+                "GET",
+                f"http://api.scrape.do?token={SCRAPE_TOKEN}&url={url}",
+                headers=headers,
+                data=payload,
+            )
             soup = BeautifulSoup(res.text, "html.parser")
 
             item_list = soup.find_all("article", class_="item")
-
-            print ("#"*20)
-            print (len(item_list))
-            print (res)
-            print ("before parsing")
 
             if len(item_list) == 0:
                 break
 
             start_date = None if len(item_list) > 0 else end_date
 
-            print ("start_date", start_date)
-            print ("end_date", end_date)
+            print("start_date", start_date)
+            print("end_date", end_date)
+            API_KEY = self.settings.get("GEO_CODE_API_KEY")
             for item in item_list:
                 detail_slug = item.find("a", class_="title")["href"]
-                detail_url = f"http://api.scrape.do?token={SCRAPE_TOKEN}&url=https://www.toledo.com/{detail_slug}"
+                detail_url = f"https://www.toledo.com/{detail_slug}"
 
                 start_date = item.find("p", class_="date")["content"]
 
                 if start_date <= end_date:
-                    yield scrapy.Request(
-                        url=detail_url,
-                        callback=self.parse_detail_response,
-                        method="GET",
+                    detail_res = requests.request(
+                        "GET",
+                        f"http://api.scrape.do?token={SCRAPE_TOKEN}&url={detail_url}",
                         headers=headers,
-                        meta={"start_date": start_date},
+                        data=payload,
                     )
-            
-            print ("#"*20)
-            print (len(item_list))
-            print (start_date)
+                    print("%" * 20)
+                    detail_soup = BeautifulSoup(detail_res.text, "html.parser")
+
+                    event_name = detail_soup.find("h1", itemprop="name")
+                    event_name = event_name.string if event_name else ""
+
+                    event_link = detail_soup.find("a", itemprop="url")
+                    event_link = event_link["href"] if event_link else ""
+
+                    location_name = detail_soup.find("span", itemprop="name")
+                    location_name = location_name.string if location_name else ""
+
+                    zip = detail_soup.find("span", itemprop="postalCode")
+                    zip = zip.string if zip else ""
+
+                    state = detail_soup.find("span", class_="state")
+                    state = state.string if state else ""
+                    state = state.upper() if state else ""
+
+                    city = detail_soup.find("span", itemprop="addressLocality")
+                    city = city.string if city else ""
+
+                    street_address = detail_soup.find("span", itemprop="streetAddress")
+                    street_address = street_address.string if street_address else ""
+                    # time_slot = detail_soup.find_all("section")[1].find("p").string
+                    description = detail_soup.find("section", itemprop="description")
+                    description = description.string if description else ""
+                    source_url = detail_url
+
+                    banner_image = detail_soup.find("img", class_="header-image")
+                    banner_image = banner_image["data-src"] if banner_image else ""
+                    banner_image_url = f"https://www.toledo.com/{banner_image}"
+
+                    categories = detail_soup.find("pre").find("a").string
+                    categories = categories.replace("&", "|") if categories else ""
+
+                    lat_lon = get_lat_lon(
+                        f"{location_name}, {street_address}, {city}, {state} {zip}",
+                        API_KEY,
+                    )
+                    if lat_lon:
+                        print(f"Latitude: {lat_lon[0]}, Longitude: {lat_lon[1]}")
+
+                    event_item = EventsItem(
+                        eventName=event_name,
+                        categories=categories,
+                        locationName=location_name,
+                        addressLine1=street_address,
+                        addressLine2="",
+                        city=city,
+                        state=state,
+                        zip=zip,
+                        startDate=start_date,
+                        endDate="",
+                        description=description,
+                        parkingInfo="",
+                        eventLink=event_link,
+                        minAge="",
+                        maxAge="",
+                        latitude=lat_lon[0] if lat_lon else "",
+                        longitude=lat_lon[1] if lat_lon else "",
+                        bannerImage=banner_image_url,
+                        sourceURL=source_url,
+                    )
+
+                    if source_url not in self.source_url_list:
+                        self.source_url_list.append(source_url)
+                        yield event_item
 
             if start_date <= end_date:
                 index += 1
                 url = f"{origin_url}{index}/"
             else:
                 url = None
-
-    def parse_detail_response(self, response):
-        soup = BeautifulSoup(response.body, "html.parser")
-
-        event_name = soup.find("h1", itemprop="name").string
-        event_link = soup.find("a", itemprop="url")["href"]
-        location_name = soup.find("span", itemprop="name").string
-        zip = soup.find("span", itemprop="postalCode").string
-        state = soup.find("span", class_="state").string
-        state = state.upper() if state else ""
-        city = soup.find("span", itemprop="addressLocality").string
-        street_address = soup.find("span", itemprop="streetAddress").string
-        time_slot = soup.find_all("section")[1].find("p").string
-        description = soup.find("section", itemprop="description").string
-        source_url = response.url
-
-        banner_image = soup.find("img", class_="header-image")["data-src"]
-        banner_image_url = f"https://www.toledo.com/{banner_image}"
-
-        categories = soup.find("pre").find("a").string
-        categories = categories.replace("&", "|") if categories else ""
-
-        API_KEY = self.settings.get("GEO_CODE_API_KEY")
-
-        lat_lon = get_lat_lon(
-            f"{location_name}, {street_address}, {city}, {state} {zip}", API_KEY
-        )
-        if lat_lon:
-            print(f"Latitude: {lat_lon[0]}, Longitude: {lat_lon[1]}")
-
-        event_item = EventsItem(
-            eventName=event_name,
-            categories=categories,
-            locationName=location_name,
-            addressLine1=street_address,
-            addressLine2="",
-            city=city,
-            state=state,
-            zip=zip,
-            startDate=response.meta["start_date"],
-            endDate="",
-            description=description,
-            parkingInfo="",
-            eventLink=event_link,
-            minAge="",
-            maxAge="",
-            latitude=lat_lon[0] if lat_lon else "",
-            longitude=lat_lon[1] if lat_lon else "",
-            bannerImage=banner_image_url,
-            sourceURL=source_url,
-        )
-
-        if source_url not in self.source_url_list:
-            self.source_url_list.append(source_url)
-            yield event_item
